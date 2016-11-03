@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Task decoder</title>
+</head>
+<body>
+<script>
+    function resultHandler(response) {
+        var bynaryText = (/([0-1]+)/.exec(response.query.results.body) || [, false])[1],
+                b = l = 0,
+                resultString = '',
+                m = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.split(''),
+                resultDiv,
+                resultLink;
+
+        if (bynaryText) {
+            bynaryText = bynaryText.replace(/[0-1]{8}/g, function (result) {
+                return String.fromCharCode(parseInt(result, 2));
+            }).split('').forEach(function (v) {
+                b = (b << 6) + m.indexOf(v);
+                l += 6;
+                while (l >= 8) {
+                    resultString += String.fromCharCode((b >>> (l -= 8)) & 0xff);
+                }
+            });
+
+            resultDiv = document.createElement('div');
+            resultDiv.textContent = "Result: ";
+            resultLink = document.createElement('a');
+            resultLink.setAttribute('href', resultString);
+            resultLink.setAttribute('target', '_blank');
+            resultLink.textContent = resultString;
+            document.body.appendChild(resultDiv);
+            resultDiv.appendChild(resultLink);
+        } else {
+            console.log("There is a error. We cannot get data. :(");
+        }
+    }
+
+    var queryUrl = ["//query.yahooapis.com/v1/public/yql?q=",
+        encodeURIComponent("SELECT * FROM html WHERE url='http://goo.gl/J5G83K'"),
+        "&format=json",
+        "&callback=resultHandler"].join('');
+    var _req = document.createElement('script');
+    _req.setAttribute('src', queryUrl);
+    document.head.appendChild(_req);
+</script>
+</body>
+</html>
